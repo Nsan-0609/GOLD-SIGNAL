@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOLD SIGNAL｜GOLD専用インジケーター</title>
+  <meta name="description" content="GOLD専用インジケーター GOLD SIGNAL。1分足〜4時間足対応。裁量判断をシンプルにするための方向・TP/SL・MTF環境認識を表示。" />
+
+  <style>
+    :root {
+      --bg: #050505;
+      --bg-soft: #0b0b0b;
+      --card: #121212;
+      --card-2: #181818;
+      --gold: #d8b45f;
+      --gold-2: #f5d98b;
+      --gold-3: #a87824;
+      --text: #f7f0e3;
+      --muted: #b9b0a0;
+      --muted-2: #8f8678;
+      --green: #45d78a;
+      --red: #e86e6e;
+      --blue: #218cff;
+      --line: rgba(216, 180, 95, 0.24);
+      --shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(216, 180, 95, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(216, 180, 95, 0.10), transparent 28%),
+        linear-gradient(180deg, #030303 0%, #0a0a0a 48%, #030303 100%);
+      line-height: 1.9;
+      letter-spacing: 0.035em;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .wrap {
+      width: min(1140px, 92%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 70px 0 66px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.84), rgba(0,0,0,0.46), rgba(0,0,0,0.82)),
+        radial-gradient(circle at 70% 25%, rgba(216,180,95,0.20), transparent 36%);
+      pointer-events: none;
+    }
+
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 42px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-cover {
+      background: linear-gradient(180deg, rgba(216,180,95,0.18), rgba(255,255,255,0.03));
+      border: 1px solid rgba(216,180,95,0.42);
+      border-radius: 28px;
+      padding: 14px;
+      box-shadow:
+        var(--shadow),
+        0 0 58px rgba(216,180,95,0.18);
+    }
+
+    .hero-cover img {
+      width: 100%;
+      border-radius: 22px;
+      border: 1px solid rgba(216,180,95,0.24);
+    }
+
+    .hero-cover p {
+      margin: 14px 4px 2px;
+      color: var(--gold-2);
+      font-size: 14px;
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--gold-2);
+      background: rgba(216, 180, 95, 0.07);
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+      font-size: clamp(36px, 5.8vw, 70px);
+      line-height: 1.16;
+      letter-spacing: 0.055em;
+    }
+
+    h1 span,
+    h2 span,
+    .gold {
+      color: var(--gold-2);
+      text-shadow: 0 0 26px rgba(216,180,95,0.22);
+    }
+
+    .lead {
+      max-width: 920px;
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: clamp(16px, 2.2vw, 20px);
+    }
+
+    .lead strong,
+    .text-box strong,
+    .card strong {
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 250px;
+      padding: 17px 28px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: 1px solid var(--gold);
+      transition: 0.25s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #b9872b, #f8df91, #a87623);
+      color: #120d05;
+      box-shadow: 0 14px 36px rgba(216,180,95,0.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 46px rgba(216,180,95,0.42);
+    }
+
+    .btn-sub {
+      color: var(--gold-2);
+      background: rgba(216,180,95,0.05);
+    }
+
+    .section {
+      padding: 76px 0;
+      border-bottom: 1px solid rgba(216,180,95,0.14);
+    }
+
+    h2 {
+      margin: 0 0 26px;
+      font-size: clamp(27px, 4.2vw, 44px);
+      line-height: 1.36;
+    }
+
+    .sub {
+      max-width: 900px;
+      margin: -8px 0 28px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .text-box {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+      border: 1px solid rgba(216,180,95,0.22);
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+    }
+
+    .text-box p {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .text-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .story-line {
+      margin: 26px 0;
+      padding-left: 22px;
+      border-left: 3px solid var(--gold);
+      color: var(--muted);
+    }
+
+    .grid-2,
+    .grid-3,
+    .gallery,
+    .proof-gallery,
+    .review-gallery,
+    .spec {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proof-gallery,
+    .review-gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .spec {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card,
+    .spec-item,
+    .image-card,
+    .review-card {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(216,180,95,0.18);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+    }
+
+    .card {
+      padding: 25px;
+    }
+
+    .card h3,
+    .review-caption h3 {
+      margin: 0 0 12px;
+      color: var(--gold-2);
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    .card p,
+    .review-caption p,
+    .cap {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .spec-item {
+      padding: 22px 18px;
+      text-align: center;
+      background: rgba(216,180,95,0.08);
+      border-color: rgba(216,180,95,0.28);
+    }
+
+    .spec-item b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--gold-2);
+      font-size: 23px;
+      line-height: 1.35;
+    }
+
+    .spec-item span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .image-card,
+    .review-card {
+      background: #000;
+      border-color: rgba(216,180,95,0.26);
+    }
+
+    .image-card img,
+    .review-card img {
+      width: 100%;
+    }
+
+    .cap,
+    .review-caption {
+      padding: 15px 16px;
+      background: linear-gradient(180deg, rgba(216,180,95,0.08), rgba(255,255,255,0.025));
+      border-top: 1px solid rgba(216,180,95,0.16);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .check {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+    }
+
+    .check li {
+      position: relative;
+      padding: 10px 0 10px 34px;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(255,255,255,0.065);
+    }
+
+    .check li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      color: var(--gold-2);
+      font-weight: 900;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .comparison .bad {
+      border-color: rgba(232,110,110,0.32);
+      background: rgba(232,110,110,0.06);
+    }
+
+    .comparison .good {
+      border-color: rgba(216,180,95,0.36);
+      background: rgba(216,180,95,0.08);
+    }
+
+    .mini-label {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .bad .mini-label {
+      color: #ffd0d0;
+      background: rgba(232,110,110,0.12);
+      border: 1px solid rgba(232,110,110,0.30);
+    }
+
+    .good .mini-label {
+      color: var(--gold-2);
+      background: rgba(216,180,95,0.12);
+      border: 1px solid rgba(216,180,95,0.34);
+    }
+
+    .price-box {
+      padding: 40px;
+      text-align: center;
+      background:
+        linear-gradient(135deg, rgba(216,180,95,0.18), rgba(255,255,255,0.03)),
+        #0a0a0a;
+      border: 1px solid rgba(216,180,95,0.44);
+      border-radius: 28px;
+      box-shadow: 0 28px 76px rgba(0,0,0,0.38);
+    }
+
+    .price-title {
+      color: var(--gold-2);
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      margin: 10px 0 16px;
+      color: #fff;
+      font-size: clamp(42px, 7vw, 66px);
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .price small {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: var(--muted-2);
+      font-size: 13px;
+    }
+
+    .warning {
+      margin-top: 26px;
+      padding: 18px;
+      color: #e8c2c2;
+      background: rgba(232,110,110,0.08);
+      border: 1px solid rgba(232,110,110,0.24);
+      border-radius: 18px;
+      font-size: 14px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    footer {
+      padding: 40px 0;
+      color: var(--muted-2);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .hero-layout,
+      .grid-2,
+      .grid-3,
+      .gallery,
+      .proof-gallery,
+      .review-gallery,
+      .spec,
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-cover {
+        order: -1;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .section {
+        padding: 58px 0;
+      }
+
+      .text-box,
+      .price-box {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-layout">
+      <div class="hero-copy">
+        <div class="badge">GOLD専用｜1分足〜4時間足対応｜裁量トレード補助インジケーター</div>
+
+        <h1>
+          GOLDで迷う時間を減らし、<br>
+          <span>見るべき場所をはっきりさせる。</span>
+        </h1>
+
+        <p class="lead">
+          AIやEAにすべて任せれば、もう迷わず勝てる。そう思っていた時期がありました。
+        </p>
+
+        <p class="lead">
+          でも、実際のGOLD相場はそこまで単純ではありません。急変動、ダマシ、指標前後の荒れ方、上位足の圧力。こうした場面では、機械的なエントリーだけでは判断しきれないことがあります。
+        </p>
+
+        <p class="lead">
+          最後に必要になるのは、<strong>「今、本当に入っていい場面なのか」</strong>を自分で確認する力です。
+          GOLD SIGNALは、その裁量判断を難しくするためではなく、もっとシンプルにするために作りました。
+        </p>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://www.gogojungle.co.jp/tools/indicators/79355?via=toppage_recentViewed" target="_blank" rel="noopener">
+            GOLD SIGNALを購入する
+          </a>
+          <a class="btn btn-sub" href="#voice">利用者の声を見る</a>
+          <a class="btn btn-sub" href="#proof">実際の画面を見る</a>
+        </div>
+      </div>
+
+      <div class="hero-cover">
+        <img src="gold-signal-thumb.jpg" alt="GOLD SIGNAL 表紙画像">
+        <p>裁量判断を、もっとシンプルに。</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="section">
+  <div class="wrap">
+    <h2>昔の私は、<br><span>チャートを見るほど迷っていました。</span></h2>
+
+    <div class="text-box">
+      <p>
+        上がりそうだから買う。下がりそうだから売る。利益が少し出たら怖くなってすぐ利確する。逆に損失が出ると「戻るかもしれない」と思って損切りできない。
+      </p>
+
+      <p>
+        そんなトレードを続けていると、勝てない理由がどこにあるのか分からなくなります。手法が悪いのか、自分が悪いのか、タイミングが悪いのか。負けるたびに別のインジケーターを探して、また同じように迷う。
+      </p>
+
+      <p class="story-line">
+        利益は小さく、損失は大きい。<br>
+        入った後に後悔する。<br>
+        何を根拠に入ったのか、後から説明できない。
+      </p>
+
+      <p>
+        特にGOLDは値動きが速いので、少し判断が遅れるだけで一気に置いていかれます。だからこそ、感覚だけで入るのではなく、入る前に確認する順番が必要でした。
+      </p>
+
+      <p>
+        私が見直したのは、特別な裏技ではありません。<strong>方向、上位足、エントリー位置、利確候補、損切り位置</strong>。この順番で見ることでした。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>AIやEAが悪いのではありません。<br><span>ただ、任せきりでは難しい場面があります。</span></h2>
+
+    <p class="sub">
+      自動売買やAI分析にも良さはあります。感情に左右されにくく、決めたルールを守れるのは大きな強みです。ただ、GOLDの短期売買では「その場の違和感」を人間が確認したほうがいい場面もあります。
+    </p>
+
+    <div class="comparison">
+      <div class="card bad">
+        <div class="mini-label">任せきりで起きやすいこと</div>
+        <h3>サインが出たから入ってしまう</h3>
+        <p>
+          直前まで強く動いていたのに、勢いが急に止まる。レンジを抜けたように見えてすぐ戻る。指標前後でノイズが大きくなる。こうした場面でも、機械的に入ってしまうと無駄な損切りが増えることがあります。
+        </p>
+      </div>
+
+      <div class="card good">
+        <div class="mini-label">裁量で確認したいこと</div>
+        <h3>本当に入っていい形かを見る</h3>
+        <p>
+          上位足の方向、今いる価格帯、TPまでの値幅、SLの位置。これらを見てから入るだけで、トレードはかなり整理されます。GOLD SIGNALは、この確認をしやすくするための道具です。
+        </p>
+      </div>
+    </div>
+
+    <div class="text-box" style="margin-top:28px;">
+      <p>
+        裁量と聞くと、難しそうに感じるかもしれません。でも、裁量とは「感覚で適当に入ること」ではありません。
+      </p>
+      <p>
+        本来の裁量は、見る場所を決めて、順番に確認し、条件が合う時だけ入ることです。
+      </p>
+      <p>
+        GOLD SIGNALは、完全自動で勝手に売買するツールではありません。あなたが最後に判断するために、必要な情報をチャート上で分かりやすく整理するインジケーターです。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>GOLD SIGNALは、<br><span>裁量判断をシンプルにするためのインジケーターです。</span></h2>
+
+    <p class="sub">
+      いきなり難しい分析を全部覚える必要はありません。まずは、画面に表示される情報を順番に確認するところから始められます。
+    </p>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>方向を確認</h3>
+        <p>BUY優勢なのか、SELL優勢なのか。まず大きな目線をそろえてから考えられます。</p>
+      </div>
+
+      <div class="card">
+        <h3>MTF環境認識</h3>
+        <p>短期足だけではなく、上位足の状態も確認。流れに逆らいすぎるエントリーを減らす意識につながります。</p>
+      </div>
+
+      <div class="card">
+        <h3>SL / TP表示</h3>
+        <p>入ってから慌てるのではなく、利確候補と損切り候補を事前に確認できます。</p>
+      </div>
+
+      <div class="card">
+        <h3>トレンド表示</h3>
+        <p>相場の勢いがどちらに傾いているのかを見やすく表示します。</p>
+      </div>
+
+      <div class="card">
+        <h3>1分足〜4時間足対応</h3>
+        <p>スキャルピングからデイトレ、上位足の確認まで、自分のスタイルに合わせて使えます。</p>
+      </div>
+
+      <div class="card">
+        <h3>誰でも見やすい構成</h3>
+        <p>複雑な情報を増やすのではなく、トレード前に見るべき場所を整理することを重視しています。</p>
+      </div>
+    </div>
+
+    <div class="spec">
+      <div class="spec-item">
+        <b>GOLD専用</b>
+        <span>値動きの大きいGOLDに特化</span>
+      </div>
+
+      <div class="spec-item">
+        <b>M1〜H4</b>
+        <span>1分足〜4時間足まで対応</span>
+      </div>
+
+      <div class="spec-item">
+        <b>SL / TP</b>
+        <span>利確・損切り目安を表示</span>
+      </div>
+
+      <div class="spec-item">
+        <b>49,800円</b>
+        <span>買い切り型インジケーター</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="proof">
+  <div class="wrap">
+    <h2>実際のチャート表示イメージ</h2>
+    <p class="sub">
+      1分足から4時間足まで表示可能です。短期足で細かく狙うことも、上位足で大きな流れを確認することもできます。
+    </p>
+
+    <div class="gallery">
+      <div class="image-card">
+        <img src="gold-signal-chart-04.png" alt="GOLD SIGNAL 1分足チャート">
+        <div class="cap">GOLD 1分足｜短期の売買判断を見やすく整理</div>
+      </div>
+
+      <div class="image-card">
+        <img src="gold-signal-chart-02.png" alt="GOLD SIGNAL 5分足チャート">
+        <div class="cap">GOLD 5分足｜スキャルピング・デイトレ向けの確認画面</div>
+      </div>
+
+      <div class="image-card">
+        <img src="gold-signal-chart-07.png" alt="GOLD SIGNAL 15分足チャート">
+        <div class="cap">GOLD 15分足｜流れとエントリー候補を同時に確認</div>
+      </div>
+
+      <div class="image-card">
+        <img src="gold-signal-chart-08.png" alt="GOLD SIGNAL 30分足チャート">
+        <div class="cap">GOLD 30分足｜大きめの流れを見ながら判断</div>
+      </div>
+
+      <div class="image-card">
+        <img src="gold-signal-chart-h4.png" alt="GOLD SIGNAL 4時間足チャート">
+        <div class="cap">GOLD 4時間足｜上位足の方向確認にも対応</div>
+      </div>
+    </div>
+
+    <p class="note">
+      ※画像は表示イメージです。相場状況によりシグナルや表示内容は変化します。
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>実際の取引画面</h2>
+    <p class="sub">
+      下記は実際の取引画面のスクリーンショットです。結果そのものを保証するものではありませんが、GOLD SIGNALを使ってGOLDの値動きを狙った場面の一例として掲載しています。
+    </p>
+
+    <div class="proof-gallery">
+      <div class="image-card">
+        <img src="trade-proof-01.jpg" alt="実際の取引画面 証拠1">
+        <div class="cap">実際の取引画面｜ポジション保有中の利益表示</div>
+      </div>
+
+      <div class="image-card">
+        <img src="trade-proof-02.jpg" alt="実際の取引画面 証拠2">
+        <div class="cap">実際の取引画面｜複数ポジションでの利益表示</div>
+      </div>
+
+      <div class="image-card">
+        <img src="trade-proof-04.jpg" alt="実際の取引画面 証拠3">
+        <div class="cap">実際の取引画面｜GOLDの値動きに乗った場面</div>
+      </div>
+    </div>
+
+    <div class="warning">
+      掲載画像は実際の取引画面ですが、将来の利益を保証するものではありません。相場状況、ロット、資金量、損切り判断によって結果は大きく変わります。
+    </div>
+  </div>
+</section>
+
+<section class="section" id="voice">
+  <div class="wrap">
+    <h2>実際に使った方から、<br><span>このような声も届いています。</span></h2>
+
+    <p class="sub">
+      ただサインを見るだけではなく、「どこを確認すればいいか」が分かりやすくなる。GOLD SIGNALを使った方からは、そういった声も届いています。
+    </p>
+
+    <div class="text-box">
+      <p>
+        トレードで一番つらいのは、負けた後に「なぜ入ったのか分からない」と感じることです。
+      </p>
+      <p>
+        反対に、入る前に方向・上位足・TP・SLを確認できるようになると、エントリーの迷いは少しずつ減っていきます。
+      </p>
+      <p>
+        下記は、実際にGOLD SIGNALを使用した方からいただいたメッセージです。
+      </p>
+    </div>
+
+    <div class="review-gallery">
+      <div class="review-card">
+        <img src="review-02(1).png" alt="GOLD SIGNAL 利用者の声 1">
+        <div class="review-caption">
+          <h3>使用開始から約2週間の感想</h3>
+          <p>15万円で開始した口座が大きく増えたという内容のご報告。GOLDの値動きにうまく乗れたケースです。</p>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <img src="review-01.png" alt="GOLD SIGNAL 利用者の声 2">
+        <div class="review-caption">
+          <h3>先物トレード経験者からの声</h3>
+          <p>先物を触っていた方から、使用後に手応えを感じたという感想をいただきました。</p>
+        </div>
+      </div>
+
+      <div class="review-card">
+        <img src="review-03.png" alt="GOLD SIGNAL 利用者の声 3">
+        <div class="review-caption">
+          <h3>FX初心者の方からの声</h3>
+          <p>「EAよりも破綻リスクを抑えながら、自分で判断しやすくなった」という趣旨の感想です。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-box" style="margin-top:28px;">
+      <p>
+        もちろん、誰が使っても同じ結果になるわけではありません。相場状況、資金量、ロット、エントリータイミング、損切り判断によって結果は変わります。
+      </p>
+      <p>
+        それでも、何も基準がないままGOLDを触るより、画面に表示される情報を順番に確認してから入るほうが、判断はかなり整理されます。
+      </p>
+      <p>
+        GOLD SIGNALが目指しているのは、<strong>「なんとなく入るトレード」から「根拠を確認して入るトレード」へ変えること</strong>です。
+      </p>
+    </div>
+
+    <div class="warning">
+      掲載している内容は利用者個人の感想および一例であり、利益を保証するものではありません。FX・CFD取引には損失リスクがあります。最終的な投資判断はご自身の責任で行ってください。
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>難しいことを全部覚える前に、<br><span>まずは見る場所を決める。</span></h2>
+
+    <div class="text-box">
+      <p>
+        トレードが難しくなる理由のひとつは、毎回見る場所が変わってしまうことです。
+      </p>
+
+      <p>
+        今日は移動平均線、明日はローソク足、次の日は別のインジケーター。判断が毎回変わると、勝った理由も負けた理由も分からなくなります。
+      </p>
+
+      <p>
+        GOLD SIGNALでは、まず見るべき情報をまとめています。
+      </p>
+
+      <ul class="check">
+        <li>今の相場はBUY寄りなのか、SELL寄りなのか</li>
+        <li>短期足と上位足の方向は合っているのか</li>
+        <li>エントリーするならどこが候補になるのか</li>
+        <li>利確はどこを目安にするのか</li>
+        <li>損切りはどこを目安にするのか</li>
+        <li>無理に入らず見送る場面ではないか</li>
+      </ul>
+
+      <p>
+        これだけでも、何も考えずに飛び乗るトレードとは違います。誰でも最初から完璧に分析できるわけではありません。だからこそ、まずは<strong>同じ画面を見て、同じ順番で確認する</strong>ことが大切です。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>こんな人に向いています</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>GOLDで毎回迷ってしまう人</h3>
+        <p>上がりそう、下がりそうという感覚だけで入ってしまい、後から「入る場所が悪かった」と感じる人に向いています。</p>
+      </div>
+
+      <div class="card">
+        <h3>利確と損切りが苦手な人</h3>
+        <p>どこで利確するか、どこで撤退するかを入る前に確認したい人に向いています。</p>
+      </div>
+
+      <div class="card">
+        <h3>短期足だけで判断して負ける人</h3>
+        <p>1分足だけ見て飛び乗ってしまう人でも、上位足の状態を一緒に確認しやすくなります。</p>
+      </div>
+
+      <div class="card">
+        <h3>シンプルに判断したい人</h3>
+        <p>複雑な分析を増やすより、まずは画面上に出ている情報を順番に確認したい人に向いています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>GOLD SIGNALは、<br><span>勝手に利益を出す魔法ではありません。</span></h2>
+
+    <div class="text-box">
+      <p>
+        ここは正直に伝えます。
+      </p>
+      <p>
+        GOLD SIGNALを入れたからといって、何も考えずにボタンを押せば勝てるわけではありません。相場に絶対はありません。
+      </p>
+      <p>
+        ただし、何も基準がないままGOLDを触るより、方向・位置・利確・損切りを確認してから入るほうが、トレードは整理されます。
+      </p>
+      <p>
+        大切なのは、完璧に当てることではなく、<strong>入る前に確認することを決めておくこと</strong>です。
+      </p>
+      <p>
+        GOLD SIGNALは、その確認をしやすくするための道具です。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="buy">
+  <div class="wrap">
+    <div class="price-box">
+      <div class="price-title">GOLD SIGNAL</div>
+
+      <h2>
+        GOLDで迷い続ける時間を、<br>
+        <span>判断する時間に変える。</span>
+      </h2>
+
+      <div class="price">
+        ¥49,800 <small>税込</small>
+      </div>
+
+      <p>
+        GOLD専用。1分足〜4時間足まで対応。<br>
+        方向・上位足・エントリー候補・TP・SLを見やすく整理する裁量補助インジケーターです。
+      </p>
+
+      <ul class="check">
+        <li>GOLD SIGNAL インジケーター本体</li>
+        <li>1分足〜4時間足まで表示可能</li>
+        <li>BUY / SELL の方向判断を視覚化</li>
+        <li>TP・SL・トレール目安を表示</li>
+        <li>上位足の状態を確認しながら判断可能</li>
+        <li>スキャルピング・デイトレ・環境認識に対応</li>
+      </ul>
+
+      <div class="cta-row" style="justify-content:center;">
+        <a class="btn btn-primary" href="https://www.gogojungle.co.jp/tools/indicators/79355?via=toppage_recentViewed" target="_blank" rel="noopener">
+          今すぐGOLD SIGNALを購入する
+        </a>
+      </div>
+
+      <p class="note">
+        販売ページへ移動します。購入前に販売ページの内容・利用条件をご確認ください。
+      </p>
+    </div>
+
+    <div class="warning">
+      本商品は投資判断を補助するインジケーターであり、利益を保証するものではありません。FX・CFD取引には元本割れのリスクがあります。最終的な売買判断はご自身の責任で行ってください。
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <h2>よくある質問</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Q. 初心者でも使えますか？</h3>
+        <p>はい。難しい分析をすべて覚えていなくても、まずはBUY/SELL、TP、SL、上位足の状態を見るところから始められます。最初はデモ口座や少額で確認することをおすすめします。</p>
+      </div>
+
+      <div class="card">
+        <h3>Q. 対応時間足は？</h3>
+        <p>1分足、5分足、15分足、30分足、1時間足、4時間足まで対応しています。短期売買から上位足確認まで使えます。</p>
+      </div>
+
+      <div class="card">
+        <h3>Q. GOLD以外にも使えますか？</h3>
+        <p>基本的にはGOLD向けとして設計しています。他銘柄で表示できる場合でも、推奨はGOLDです。</p>
+      </div>
+
+      <div class="card">
+        <h3>Q. これだけで必ず勝てますか？</h3>
+        <p>いいえ。利益保証はありません。GOLD SIGNALはあくまで判断補助ツールです。相場環境、資金管理、ロット、損切り判断と合わせて使うことが大切です。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  © GOLD SIGNAL. All Rights Reserved.<br>
+  本ページの内容は投資助言ではありません。取引は自己責任で行ってください。
+</footer>
+
+</body>
+</html>
